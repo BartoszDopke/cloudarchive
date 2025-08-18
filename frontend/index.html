@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Photo Archive Upload</title>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Poppins:wght@500;700&display=swap" rel="stylesheet"/>
+  <style>
+    /* ─── Design Tokens ─── */
+    :root {
+      /* Colors */
+      --color-bg: #f5f7fa;
+      --color-card-bg: rgba(255, 255, 255, 0.75);
+      --color-text-primary: #1a1a1a;
+      --color-text-secondary: #555;
+      --color-accent: #0066cc;
+      --color-accent-hover: #005bb5;
+      --color-border: rgba(0, 0, 0, 0.1);
+      --color-progress: #0066cc;
+      --color-danger: #d63638;
+      
+      /* Typography */
+      --font-heading: 'Poppins', sans-serif;
+      --font-body: 'Open Sans', sans-serif;
+      --font-size-base: 16px;
+      
+      /* Spacing */
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --space-xl: 32px;
+      
+      /* Other */
+      --radius: 12px;
+      --shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    /* ─── Global Reset ─── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-body);
+      font-size: var(--font-size-base);
+      color: var(--color-text-primary);
+      background: var(--color-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: var(--space-lg);
+    }
+
+    h1 {
+      font-family: var(--font-heading);
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: var(--space-md);
+      color: var(--color-text-primary);
+    }
+
+    /* ─── Card ─── */
+    .upload-card {
+      width: 90%;
+      max-width: 640px;
+      padding: var(--space-xl);
+      border-radius: var(--radius);
+      background: var(--color-card-bg);
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    /* ─── Drop Zone ─── */
+    .drop-zone {
+      position: relative;
+      border: 2px dashed var(--color-border);
+      border-radius: var(--radius);
+      padding: var(--space-lg);
+      transition: background 0.3s, border-color 0.3s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 180px;
+      background: #fff;
+      cursor: pointer;
+    }
+    .drop-zone.dragover {
+      background: #f0f4f8;
+      border-color: var(--color-accent);
+    }
+    .drop-zone p {
+      color: var(--color-text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+    input[type="file"] { display: none; }
+
+    /* ─── Preview Grid ─── */
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: var(--space-md);
+      margin: var(--space-lg) 0;
+    }
+    .preview-grid img {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    /* ─── Button ─── */
+    .btn {
+      display: inline-block;
+      font-family: var(--font-heading);
+      font-size: 1rem;
+      font-weight: 500;
+      padding: var(--space-sm) var(--space-lg);
+      margin-top: var(--space-md);
+      color: #fff;
+      background: var(--color-accent);
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .btn:not(:disabled):hover {
+      background: var(--color-accent-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ─── Status & Progress ─── */
+    .status {
+      margin-top: var(--space-md);
+      font-size: 0.9rem;
+      min-height: 1.2em;
+      color: var(--color-text-secondary);
+      word-break: break-word;
+    }
+    .status.error { color: var(--color-danger); }
+    .status.success { color: var(--color-accent); }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: var(--color-border);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: var(--space-md);
+      display: none;
+    }
+    .progress-bar div {
+      height: 100%;
+      width: 0;
+      background: var(--color-progress);
+      transition: width 0.2s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="upload-card">
+    <h1>📸 Upload Your Photos</h1>
+
+    <label class="drop-zone" id="dropZone">
+      <p>Drag &amp; drop images here, or click to browse</p>
+      <p style="font-size:0.85rem; color: var(--color-text-secondary);">
+        Max 10 MB each — JPG, PNG
+      </p>
+      <input type="file" id="fileInput" accept="image/png, image/jpeg" multiple/>
+    </label>
+
+    <div id="previewGrid" class="preview-grid"></div>
+
+    <button id="uploadBtn" class="btn" disabled>Upload All</button>
+
+    <div class="progress-bar" id="progressBar"><div></div></div>
+    <div id="statusText" class="status"></div>
+  </div>
+
+  <script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const previewGrid = document.getElementById('previewGrid');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const statusText = document.getElementById('statusText');
+    const progressBar = document.getElementById('progressBar');
+    const progressFill = progressBar.querySelector('div');
+    let selectedFiles = [];
+
+    // Drag & drop feedback
+    ['dragenter','dragover'].forEach(evt =>
+      dropZone.addEventListener(evt, e => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+      })
+    );
+    ['dragleave','drop'].forEach(evt =>
+      dropZone.addEventListener(evt, e => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+      })
+    );
+
+    // Handle file selection
+    dropZone.addEventListener('drop', e => {
+      if (e.dataTransfer.files.length) handleFiles([...e.dataTransfer.files]);
+    });
+    dropZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length) handleFiles([...fileInput.files]);
+    });
+
+    function handleFiles(files) {
+      selectedFiles = files.filter(f => f.size <= 10 * 1024 * 1024);
+      previewGrid.innerHTML = '';
+      selectedFiles.forEach(f => {
+        const img = document.createElement('img');
+        const reader = new FileReader();
+        reader.onload = e => { img.src = e.target.result; };
+        reader.readAsDataURL(f);
+        previewGrid.appendChild(img);
+      });
+      uploadBtn.disabled = selectedFiles.length === 0;
+      statusText.textContent = '';
+      statusText.className = 'status';
+      progressBar.style.display = 'none';
+      progressFill.style.width = '0%';
+    }
+
+    uploadBtn.addEventListener('click', () => {
+      if (!selectedFiles.length) return;
+      uploadBtn.disabled = true;
+      statusText.textContent = 'Uploading…';
+      statusText.className = 'status';
+      progressBar.style.display = 'block';
+
+      Promise.all(selectedFiles.map(f =>
+        new Promise(res => {
+          const r = new FileReader();
+          r.onload = () => res({ filename: f.name, data: r.result.split(',')[1] });
+          r.readAsDataURL(f);
+        })
+      )).then(filesPayload => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'lambda_function_url');
+        xhr.setRequestHeader('Content-Type', 'application/json');
+
+        xhr.upload.onprogress = e => {
+          if (e.lengthComputable) {
+            progressFill.style.width = `${(e.loaded / e.total) * 100}%`;
+          }
+        };
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            statusText.textContent = '✅ All uploads successful!';
+            statusText.classList.add('success');
+          } else {
+            statusText.textContent = `❌ Error: ${xhr.responseText}`;
+            statusText.classList.add('error');
+          }
+          uploadBtn.disabled = false;
+        };
+        xhr.onerror = () => {
+          statusText.textContent = '❌ Network error.';
+          statusText.classList.add('error');
+          uploadBtn.disabled = false;
+        };
+
+        xhr.send(JSON.stringify({ files: filesPayload }));
+      });
+    });
+  </script>
+</body>
+</html>
