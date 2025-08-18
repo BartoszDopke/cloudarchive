@@ -30,6 +30,8 @@ data "archive_file" "backend" {
 
 
 resource "aws_lambda_function" "uploader" {
+  depends_on = [ data.archive_file.backend ]
+
   function_name    = "photo_upload_fn"
   runtime          = "python3.13"
   handler          = "main.lambda_handler"
@@ -61,11 +63,6 @@ resource "aws_lambda_permission" "uploader" {
   function_name          = aws_lambda_function.uploader.function_name
   principal              = "*"
   function_url_auth_type = "NONE" # TEMPORARY!
-}
-
-import {
-  id = "photo_upload_fn/FunctionURLAllowPublicAccess"
-  to = aws_lambda_permission.uploader
 }
 
 resource "aws_cloudwatch_log_group" "uploader" {
