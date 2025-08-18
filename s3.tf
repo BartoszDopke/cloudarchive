@@ -68,28 +68,6 @@ resource "aws_s3_bucket_policy" "frontend_policy" {
   })
 }
 
-# resource "aws_s3_bucket_lifecycle_configuration" "archive" {
-#   bucket = aws_s3_bucket.frontend_bucket.id
-
-#   rule {
-#     id = "immediately-archive"
-
-#     filter {
-#       prefix = "images/"
-#       and {
-#         object_size_greater_than = 131072
-#         prefix                   = "images/"
-#       }
-#     }
-#     status = "Enabled"
-
-#     transition {
-#       days          = 1
-#       storage_class = "GLACIER"
-#     }
-#   }
-# }
-
 output "website_url" {
-  value = aws_s3_bucket.frontend_bucket.bucket_regional_domain_name
+  value = aws_s3_bucket_website_configuration.frontend_bucket.website_endpoint
 }
