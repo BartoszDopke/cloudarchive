@@ -68,8 +68,8 @@ resource "aws_s3_bucket_policy" "frontend_policy" {
   })
 }
 
-resource "aws_s3_bucket_lifecycle_configuration" "example" {
-  bucket = aws_s3_bucket.bucket.id
+resource "aws_s3_bucket_lifecycle_configuration" "frontend_bucket" {
+  bucket = aws_s3_bucket.frontend_bucket.id
 
   rule {
     id = "move-to-glacier"
