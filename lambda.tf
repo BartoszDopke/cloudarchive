@@ -30,7 +30,7 @@ data "archive_file" "backend" {
 
 
 resource "aws_lambda_function" "uploader" {
-  depends_on = [ data.archive_file.backend ]
+  depends_on = [data.archive_file.backend]
 
   function_name    = "photo_upload_fn"
   runtime          = "python3.13"
