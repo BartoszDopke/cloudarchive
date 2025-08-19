@@ -68,6 +68,23 @@ resource "aws_s3_bucket_policy" "frontend_policy" {
   })
 }
 
+resource "aws_s3_bucket_lifecycle_configuration" "example" {
+  bucket = aws_s3_bucket.bucket.id
+
+  rule {
+    id = "move-to-glacier"
+
+    filter {}
+
+    transition {
+      days          = 0 # Transition immediately
+      storage_class = "GLACIER"
+    }
+
+    status = "Enabled"
+  }
+}
+
 output "website_url" {
   value = aws_s3_bucket_website_configuration.frontend_bucket.website_endpoint
 }
