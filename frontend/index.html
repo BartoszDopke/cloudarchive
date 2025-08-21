@@ -340,8 +340,11 @@
       archiveModal.style.display = 'flex';
       archiveList.innerHTML = '';
       archiveStatus.textContent = 'Loading...';
-      fetch('list_files')
-        .then(r => r.json())
+      fetch('/list_files') // <-- ensure leading slash for correct endpoint
+        .then(r => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}: ${r.statusText}`);
+          return r.json();
+        })
         .then(files => {
           archiveStatus.textContent = '';
           if (!files.length) {
@@ -367,8 +370,8 @@
             archiveList.appendChild(el);
           });
         })
-        .catch(() => {
-          archiveStatus.textContent = 'Failed to load archive.';
+        .catch((err) => {
+          archiveStatus.textContent = 'Failed to load archive: ' + err.message;
         });
     });
 
