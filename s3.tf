@@ -23,12 +23,16 @@ resource "aws_s3_object" "index" {
   bucket = aws_s3_bucket.frontend_bucket.id
   key    = "index.html"
   content = replace(
-    file("frontend/index.html"),
-    "lambda_function_url",
-    aws_lambda_function_url.uploader.function_url
+    replace(
+      file("frontend/index.html"),
+      "lambda_function_url",
+      aws_lambda_function_url.uploader.function_url
+    ),
+    "list_files_lambda_function_url",
+    aws_lambda_function_url.list_files.function_url
   )
   content_type = "text/html"
-  etag = filemd5("frontend/index.html")
+  etag         = filemd5("frontend/index.html")
 }
 
 resource "aws_s3_bucket_public_access_block" "frontend_bucket" {
