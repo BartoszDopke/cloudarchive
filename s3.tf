@@ -28,6 +28,7 @@ resource "aws_s3_object" "index" {
     aws_lambda_function_url.uploader.function_url
   )
   content_type = "text/html"
+  etag = filemd5("frontend/index.html")
 }
 
 resource "aws_s3_bucket_public_access_block" "frontend_bucket" {
