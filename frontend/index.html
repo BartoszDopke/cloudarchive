@@ -352,24 +352,23 @@
             return;
           }
           // S3 URL construction
-          const bucket = 'photoarchivebucket'; // <-- replace with your bucket name
-          const region = 'eu-west-2'; // <-- replace with your region
+          const websiteEndpoint = "http://photoarchivebucket.s3-website.eu-central-1.amazonaws.com";
           files.files.forEach(filename => {
-            const url = `https://${bucket}.s3.${region}.amazonaws.com/${encodeURIComponent(filename)}`;
+            const url = `${websiteEndpoint}/${encodeURIComponent(filename)}`;
             const ext = filename.split('.').pop().toLowerCase();
             let el;
-            if (['jpg','jpeg','png'].includes(ext)) {
-              el = document.createElement('a');
+            if (["jpg","jpeg","png"].includes(ext)) {
+              el = document.createElement("a");
               el.href = url;
-              el.target = '_blank';
-              el.style.display = 'block';
+              el.target = "_blank";
+              el.style.display = "block";
               el.innerHTML = `<img src="${url}" style="width:100%;height:100px;object-fit:cover;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.08);"/><div style="font-size:0.85rem;word-break:break-all;margin-top:4px;">${filename}</div>`;
             } else {
-              el = document.createElement('a');
+              el = document.createElement("a");
               el.href = url;
-              el.target = '_blank';
+              el.target = "_blank";
               el.textContent = filename;
-              el.style = 'padding:8px;display:block;word-break:break-all;';
+              el.style = "padding:8px;display:block;word-break:break-all;";
             }
             archiveList.appendChild(el);
           });
