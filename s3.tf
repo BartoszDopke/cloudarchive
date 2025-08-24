@@ -35,7 +35,7 @@ resource "aws_s3_object" "index" {
   aws_s3_bucket.frontend_bucket.bucket
   ),
   "region_name",
-  data.aws_region.current.name
+  data.aws_region.current.region
   )
   content_type = "text/html"
   etag         = filemd5("frontend/index.html")
