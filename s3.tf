@@ -22,7 +22,7 @@ resource "aws_s3_bucket_acl" "frontend_bucket" {
 resource "aws_s3_object" "index" {
   bucket = aws_s3_bucket.frontend_bucket.id
   key    = "index.html"
-  content = replace(
+  content = replace(replace(replace(
     replace(
       file("frontend/index.html"),
       "lambda_function_url",
@@ -30,6 +30,12 @@ resource "aws_s3_object" "index" {
     ),
     "list_files_url",
     aws_lambda_function_url.list_files.function_url
+  ),
+  "s3_bucket_name",
+  aws_s3_bucket.frontend_bucket.bucket
+  ),
+  "region_name",
+  data.aws_region.current.name
   )
   content_type = "text/html"
   etag         = filemd5("frontend/index.html")

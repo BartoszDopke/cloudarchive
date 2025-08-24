@@ -351,8 +351,7 @@
             archiveList.innerHTML = '<p style="grid-column:1/-1;color:#888;">No files found.</p>';
             return;
           }
-          // S3 URL construction
-          const websiteEndpoint = "http://photoarchivebucket.s3-website.eu-central-1.amazonaws.com";
+          const websiteEndpoint = "http://s3_bucket_name.s3-website.region_name.amazonaws.com";
           files.files.forEach(filename => {
             const url = `${websiteEndpoint}/${encodeURIComponent(filename)}`;
             const ext = filename.split('.').pop().toLowerCase();
