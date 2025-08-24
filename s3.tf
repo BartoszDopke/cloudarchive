@@ -22,12 +22,23 @@ resource "aws_s3_bucket_acl" "frontend_bucket" {
 resource "aws_s3_object" "index" {
   bucket = aws_s3_bucket.frontend_bucket.id
   key    = "index.html"
-  content = replace(
-    file("frontend/index.html"),
-    "lambda_function_url",
-    aws_lambda_function_url.uploader.function_url
+  content = replace(replace(replace(
+    replace(
+      file("frontend/index.html"),
+      "lambda_function_url",
+      aws_lambda_function_url.uploader.function_url
+    ),
+    "list_files_url",
+    aws_lambda_function_url.list_files.function_url
+  ),
+  "s3_bucket_name",
+  aws_s3_bucket.frontend_bucket.bucket
+  ),
+  "region_name",
+  data.aws_region.current.region
   )
   content_type = "text/html"
+  etag         = filemd5("frontend/index.html")
 }
 
 resource "aws_s3_bucket_public_access_block" "frontend_bucket" {
