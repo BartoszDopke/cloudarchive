@@ -340,7 +340,7 @@
       archiveModal.style.display = 'flex';
       archiveList.innerHTML = '';
       archiveStatus.textContent = 'Loading...';
-      fetch('list_files_lambda_function_url')
+      fetch('list_files_url')
         .then(r => {
           if (!r.ok) throw new Error(`HTTP ${r.status}: ${r.statusText}`);
           return r.json();

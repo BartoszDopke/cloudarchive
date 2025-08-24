@@ -28,7 +28,7 @@ resource "aws_s3_object" "index" {
       "lambda_function_url",
       aws_lambda_function_url.uploader.function_url
     ),
-    "list_files_lambda_function_url",
+    "list_files_url",
     aws_lambda_function_url.list_files.function_url
   )
   content_type = "text/html"
