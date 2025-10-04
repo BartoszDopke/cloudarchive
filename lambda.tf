@@ -115,3 +115,75 @@ resource "aws_cloudwatch_log_group" "list_files" {
   name              = "/aws/lambda/${aws_lambda_function.list_files.function_name}"
   retention_in_days = 1
 }
+
+resource "aws_cloudwatch_log_group" "cognito_auth" {
+  provider = aws.us_east_1
+  
+  name              = "/aws/lambda/${aws_lambda_function.cognito_auth.function_name}"
+  retention_in_days = 1
+}
+
+data "archive_file" "cognito_auth" {
+  type        = "zip"
+  source_dir  = "${path.module}/cognito_auth"
+  output_path = "${path.module}/cognito_auth.zip"
+}
+
+resource "aws_iam_role" "cognito_auth" {
+  name = "lambda-edge-exec"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = [
+            "lambda.amazonaws.com",
+            "edgelambda.amazonaws.com"
+          ]
+        },
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+# Add SSM Parameter access policy
+resource "aws_iam_role_policy" "cognito_auth_ssm" {
+  name = "ssm-parameter-access"
+  role = aws_iam_role.cognito_auth.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "ssm:GetParameter"
+        ],
+        Resource = [
+          "arn:aws:ssm:us-east-1:${data.aws_caller_identity.current.account_id}:parameter/cloudarchive/cognito/*"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "cognito_auth" {
+  role       = aws_iam_role.cognito_auth.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+
+resource "aws_lambda_function" "cognito_auth" {
+  provider = aws.us_east_1
+
+  function_name    = "cognito-auth"
+  filename         = data.archive_file.cognito_auth.output_path
+  source_code_hash = data.archive_file.cognito_auth.output_base64sha256
+  handler          = "index.handler"
+  runtime          = "python3.9"
+  role             = aws_iam_role.cognito_auth.arn
+  publish          = true
+}
